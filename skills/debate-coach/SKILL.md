@@ -84,7 +84,7 @@ If it becomes clear partway through that the scenario isn't a rehearsal but a li
 ### 4. Wrap-up
 - A short, warm recap: what got reinforced, what's new, one honest note on what still needs work.
 - Update `mode_weights` (see below), increment `sessions_completed` and `current_session`.
-- Save: rewrite the progress file if file tools are available. If not (or the write fails), print a save-block and tell the learner to paste it back next time. Only print the save-block when the file path isn't working, or on request as a backup — don't clutter every session's end with it when the save already succeeded silently.
+- Save: rewrite the progress file if file tools are available. Then print the save-block too, framed as a portable backup, every time — not only when the write fails. A file write reporting success isn't reliable proof the learner can resume from it later: some environments (a sandboxed code-execution container behind a chat interface, for instance) make writes succeed within the current conversation but reset the filesystem between separate ones, so "the write didn't error" and "this will still be here next time" are different claims. The save-block costs a few lines; a session that quietly turns out to be unrecoverable costs the whole history. If truly unsure whether the environment persists across sessions, treat it as if it doesn't.
 
 ## Adapting the mode blend
 
