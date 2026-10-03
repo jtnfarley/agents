@@ -1,0 +1,112 @@
+[
+  {
+    "id": "sappho",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Malarz_Safony_-_Kalpis_wykonana_technik%C4%85_Six.jpg"
+  },
+  {
+    "id": "nietzsche",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/1/1b/Nietzsche187a.jpg"
+  },
+  {
+    "id": "diogenes",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/8/89/Diogenes_Mosaic_R%C3%B6misch-Germanisches_Museum.jpg"
+  },
+  {
+    "id": "marie-curie",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/c/c8/Marie_Curie_c._1920s.jpg"
+  },
+  {
+    "id": "frida-kahlo",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/0/06/Frida_Kahlo%2C_by_Guillermo_Kahlo.jpg"
+  },
+  {
+    "id": "mozart",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/a/ad/The_Mozart_Family_-_Wolfgang_Amadeus_Mozart_headshot.jpg"
+  },
+  {
+    "id": "sun-tzu",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/c/cf/%E5%90%B4%E5%8F%B8%E9%A9%AC%E5%AD%99%E6%AD%A6.jpg"
+  },
+  {
+    "id": "socrates",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Socrates_Louvre.jpg"
+  },
+  {
+    "id": "confucius",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/5/54/Confucius_Tang_Dynasty.jpg"
+  },
+  {
+    "id": "machiavelli",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/e/e2/Portrait_of_Niccol%C3%B2_Machiavelli_by_Santi_di_Tito.jpg"
+  },
+  {
+    "id": "joan-of-arc",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/c/c3/Joan_of_Arc_miniature_graded.jpg"
+  },
+  {
+    "id": "genghis-khan",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/3/35/YuanEmperorAlbumGenghisPortrait.jpg"
+  },
+  {
+    "id": "cleopatra",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Kleopatra-VII.-Altes-Museum-Berlin1.jpg"
+  },
+  {
+    "id": "boudica",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/b/bd/Queen_Boudica_by_John_Opie.jpg"
+  },
+  {
+    "id": "darwin",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Charles_Darwin_seated_crop.jpg"
+  },
+  {
+    "id": "shakespeare",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/2/21/William_Shakespeare_by_John_Taylor%2C_edited.jpg"
+  },
+  {
+    "id": "poe",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/9/97/Edgar_Allan_Poe%2C_circa_1849%2C_restored%2C_squared_off.jpg"
+  },
+  {
+    "id": "wilde",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Oscar_Wilde_by_Napoleon_Sarony._Three-quarter-length_photograph%2C_seated_%28cropped%29.jpg"
+  },
+  {
+    "id": "beethoven",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Joseph_Karl_Stieler%27s_Beethoven_mit_dem_Manuskript_der_Missa_solemnis.jpg/3840px-Joseph_Karl_Stieler%27s_Beethoven_mit_dem_Manuskript_der_Missa_solemnis.jpg"
+  },
+  {
+    "id": "wagner",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/9/9d/RichardWagner.jpg"
+  },
+  {
+    "id": "catherine-the-great",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/7/72/Catherine_II_after_Roslin%2C_Rokotov_%281780s%2C_Kunsthistorisches_Museum%29.jpg"
+  },
+  {
+    "id": "harriet-tubman",
+    "status": "ok",
+    "source": "https://upload.wikimedia.org/wikipedia/commons/b/b4/Carte-de-visite_portrait_of_Harriet_Tubman_%28cropped%29.jpg"
+  }
+]

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,500;0,600;1,400;1,500;1,600&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:oklch(0.97 0.006 90);}
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-thumb{background:oklch(0 0 0 / 0.15);border-radius:3px}
+  @keyframes pulseRing{0%,100%{box-shadow:0 0 0 0 oklch(0.78 0.12 85 / 0.5)}50%{box-shadow:0 0 0 6px oklch(0.78 0.12 85 / 0)}}
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+<div style="width:100vw;height:100vh;display:flex;flex-direction:column;background:oklch(0.97 0.006 90);color:oklch(0.22 0.01 60);font-family:Inter,sans-serif;overflow:hidden;position:relative">
+
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid oklch(0 0 0 / 0.08);flex-shrink:0">
+    <div>
+      <div style="font-size:14px;font-weight:700;letter-spacing:0.16em">THE TABLE</div>
+      <div style="font-size:12px;color:oklch(0.45 0.01 60);margin-top:2px">Texas Hold'em · Blinds $10 / $20</div>
+    </div>
+    <button onClick="{{ openPicker }}" style="background:none;border:1px solid oklch(0 0 0 / 0.15);color:oklch(0.4 0.01 60);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;padding:8px 14px;border-radius:4px;cursor:pointer;font-family:Inter,sans-serif" style-hover="border-color:oklch(0.62 0.13 70);color:oklch(0.22 0.01 60)">Review Seat Opening</button>
+  </div>
+
+  <div style="flex:1;display:flex;overflow:hidden">
+
+    <div style="flex:1;position:relative;padding:40px">
+      <div style="position:absolute;inset:40px;border-radius:50%;background:oklch(0.62 0.045 145);border:1px solid oklch(0 0 0 / 0.1);box-shadow:inset 0 0 60px oklch(0 0 0 / 0.2)"></div>
+
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:14px">
+        <div style="display:flex;gap:8px">
+          <sc-for list="{{ community }}" as="card" hint-placeholder-count="5">
+            <div style="width:38px;height:54px;border-radius:5px;background:{{ card.faceDown }};border:1px solid oklch(0 0 0 / 0.12);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:{{ card.color }};border:1px solid oklch(0 0 0 / 0.1)">{{ card.label }}</div>
+          </sc-for>
+        </div>
+        <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.5 0.01 60)">Pot · <span style="color:oklch(0.22 0.01 60);font-weight:600">{{ potLabel }}</span></div>
+      </div>
+
+      <sc-for list="{{ seats }}" as="seat" hint-placeholder-count="5">
+        <div style="position:absolute;top:{{ seat.top }};left:{{ seat.left }};transform:translate(-50%,-50%);width:158px;display:flex;flex-direction:column;align-items:center;gap:6px">
+
+          <sc-if value="{{ seat.empty }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ seat.onOpen }}" style="width:100%;padding:16px 10px;border:1px dashed oklch(0 0 0 / 0.25);border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;background:oklch(1 0 0 / 0.6)">
+              <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.45 0.01 60)">Seat Open</div>
+              <div style="font-size:12px;color:oklch(0.62 0.13 70)">Choose a player →</div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ seat.notEmpty }}" hint-placeholder-val="{{ true }}">
+            <div style="position:relative;width:64px;height:64px;border-radius:50%;overflow:hidden;box-shadow:{{ seat.ring }}">
+              <image-slot id="{{ seat.portraitId }}" shape="circle" placeholder="{{ seat.name }}"></image-slot>
+            </div>
+            <div style="font-size:13px;font-weight:600;opacity:{{ seat.dim }}">{{ seat.name }}</div>
+            <div style="font-size:11px;color:oklch(0.45 0.01 60)">{{ seat.stackLabel }}</div>
+            <div style="display:flex;gap:4px;opacity:{{ seat.dim }}">
+              <sc-for list="{{ seat.cards }}" as="c" hint-placeholder-count="2">
+                <div style="width:26px;height:36px;border-radius:4px;background:oklch(0.99 0.003 90);border:1px solid oklch(0 0 0 / 0.12);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:{{ c.color }}">{{ c.label }}</div>
+              </sc-for>
+            </div>
+            <div style="min-height:52px;width:100%;text-align:center;margin-top:2px">
+              <div style="font-family:Lora,serif;font-style:italic;font-size:11px;color:oklch(0.55 0.01 90);opacity:{{ seat.dim }}">{{ seat.dir }}</div>
+              <div style="font-family:Lora,serif;font-size:12.5px;color:oklch(0.25 0.01 60);opacity:{{ seat.dim }};line-height:1.35;margin-top:2px">"{{ seat.line }}"</div>
+            </div>
+          </sc-if>
+
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="width:320px;flex-shrink:0;border-left:1px solid oklch(0 0 0 / 0.08);display:flex;flex-direction:column">
+      <div style="padding:16px 20px;border-bottom:1px solid oklch(0 0 0 / 0.08);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.45 0.01 60)">Table Talk</div>
+      <div style="flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:18px">
+        <sc-for list="{{ log }}" as="entry" hint-placeholder-count="4">
+          <sc-if value="{{ entry.isNarrator }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:Lora,serif;font-style:italic;font-size:12px;color:oklch(0.55 0.01 90);text-align:center;line-height:1.5">{{ entry.text }}</div>
+          </sc-if>
+          <sc-if value="{{ entry.isLine }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.06em;color:oklch(0.62 0.13 70)">{{ entry.name }}</div>
+              <div style="font-family:Lora,serif;font-style:italic;font-size:12px;color:oklch(0.45 0.01 60);margin-top:3px">{{ entry.dir }}</div>
+              <div style="font-family:Lora,serif;font-size:14px;color:oklch(0.25 0.01 60);margin-top:3px;line-height:1.45">"{{ entry.text }}"</div>
+            </div>
+          </sc-if>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{ pickerOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closePicker }}" style="position:absolute;inset:0;background:oklch(0 0 0 / 0.35);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:10">
+      <div onClick="{{ stopClick }}" style="width:460px;max-width:90vw;background:oklch(0.99 0.004 90);border:1px solid oklch(0 0 0 / 0.1);border-radius:10px;padding:28px">
+        <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:oklch(0.45 0.01 60)">A Seat Has Opened</div>
+        <div style="font-family:Lora,serif;font-style:italic;font-size:14px;color:oklch(0.35 0.01 60);margin-top:4px">Diogenes' chair sits empty. Who takes it?</div>
+        <div style="display:flex;flex-direction:column;margin-top:18px">
+          <sc-for list="{{ candidates }}" as="cand" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:14px;padding:12px 4px;border-top:1px solid oklch(0 0 0 / 0.08)">
+              <div style="width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0">
+                <image-slot id="{{ cand.portraitId }}" shape="circle" placeholder="{{ cand.name }}"></image-slot>
+              </div>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:600">{{ cand.name }}</div>
+                <div style="font-family:Lora,serif;font-style:italic;font-size:11.5px;color:oklch(0.45 0.01 60);margin-top:2px">{{ cand.flavor }}</div>
+              </div>
+              <button onClick="{{ cand.onPick }}" style="background:oklch(0.62 0.13 70);color:oklch(0.2 0.02 60);border:none;font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;padding:8px 14px;border-radius:4px;cursor:pointer;flex-shrink:0">Seat</button>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+const SUIT = { h: {s:'♥', red:true}, d: {s:'♦', red:true}, s: {s:'♠', red:false}, c: {s:'♣', red:false} };
+function cardFace(rank, suit) {
+  const info = SUIT[suit];
+  return { label: rank + info.s, color: info.red ? 'oklch(0.48 0.18 25)' : 'oklch(0.22 0.01 60)' };
+}
+
+const CANDIDATES = [
+  { name: 'Mozart', flavor: 'Plays every hand like it is already composed.', greetDir: 'adjusts his cuffs', greetLine: 'Every hand has a structure. I simply have not heard this one before.', cards: [cardFace('A','c'), cardFace('K','c')] },
+  { name: 'Sun Tzu', flavor: 'Folds before you know he has folded.', greetDir: 'says nothing at first', greetLine: 'The seat was empty. Now it is occupied. Nothing else has changed — yet.', cards: [cardFace('8','h'), cardFace('8','s')] },
+  { name: 'Cleopatra', flavor: 'Reads the table like a court she already owns.', greetDir: 'surveys the felt like new territory', greetLine: 'I have inherited worse tables than this.', cards: [cardFace('Q','d'), cardFace('J','d')] },
+];
+
+class Component extends DCLogic {
+  state = {
+    pickerOpen: true,
+    seats: [
+      { name: 'Sappho', top: '90%', left: '50%', stack: 1180, folded: false, active: false,
+        cards: [cardFace('Q','h'), cardFace('J','h')], dir: 'tracing the rim of her cup', line: 'A pair is a promise. I intend to collect.' },
+      { name: 'Frida Kahlo', top: '68%', left: '88%', stack: 860, folded: false, active: false,
+        cards: [cardFace('9','s'), cardFace('9','d')], dir: 'leans back, amused', line: 'Fold now, and let the pair keep its secret.' },
+      { name: 'Marie Curie', top: '14%', left: '78%', stack: 1420, folded: true, active: true,
+        cards: [cardFace('K','d'), cardFace('K','c')], dir: 'stares at the board a long moment', line: 'A pair of sevens on the board. If he has the third, my kings are already dead.' },
+      { name: 'Diogenes', top: '14%', left: '22%', empty: true },
+      { name: 'Nietzsche', top: '68%', left: '12%', stack: 640, folded: true, active: false,
+        cards: [cardFace('2','c'), cardFace('7','d')], dir: 'already looking away', line: 'I withdraw. Not everything must be endured.' },
+    ],
+    community: [cardFace('7','d'), cardFace('7','c'), cardFace('2','s'), cardFace('K','h'), null],
+    pot: 340,
+    log: [
+      { isNarrator: true, text: 'Diogenes shoves his last chips forward and turns up the rags. The table falls quiet.' },
+      { isLine: true, name: 'NIETZSCHE', dir: 'already looking away', text: 'I withdraw. Not everything must be endured.' },
+      { isLine: true, name: 'SAPPHO', dir: 'tracing the rim of her cup', text: 'A pair is a promise. I intend to collect.' },
+      { isLine: true, name: 'FRIDA KAHLO', dir: 'leans back, amused', text: 'Fold now, and let the pair keep its secret.' },
+      { isLine: true, name: 'MARIE CURIE', dir: 'stares at the board a long moment', text: 'A pair of sevens on the board. If he has the third, my kings are already dead.' },
+    ],
+  };
+
+  openPicker = () => this.setState({ pickerOpen: true });
+  closePicker = () => this.setState({ pickerOpen: false });
+  stopClick = (e) => e.stopPropagation();
+
+  pickCandidate = (cand) => {
+    this.setState((s) => ({
+      pickerOpen: false,
+      seats: s.seats.map((seat) => seat.name === 'Diogenes'
+        ? { name: cand.name, top: seat.top, left: seat.left, stack: 1000, folded: false, active: false, cards: cand.cards, dir: cand.greetDir, line: cand.greetLine }
+        : seat),
+      log: [...s.log,
+        { isNarrator: true, text: `${cand.name} takes the empty chair.` },
+        { isLine: true, name: cand.name.toUpperCase(), dir: cand.greetDir, text: cand.greetLine },
+      ],
+    }));
+  };
+
+  renderVals() {
+    const seats = this.state.seats.map((seat) => {
+      if (seat.empty) {
+        return { top: seat.top, left: seat.left, empty: true, notEmpty: false, onOpen: this.openPicker };
+      }
+      const dim = seat.folded ? 0.55 : 1;
+      return {
+        top: seat.top, left: seat.left, empty: false, notEmpty: true,
+        name: seat.name, portraitId: 'portrait-' + seat.name.replace(/\s+/g, '-').toLowerCase(),
+        stackLabel: '$' + seat.stack.toLocaleString(),
+        cards: seat.cards, dir: seat.dir, line: seat.line, dim,
+        ring: seat.active ? '0 0 0 3px oklch(0.62 0.13 70)' : 'none',
+      };
+    });
+
+    const community = this.state.community.map((card) =>
+      card ? { label: card.label, color: card.color, faceDown: 'oklch(0.99 0.003 90)' }
+           : { label: '', color: 'transparent', faceDown: 'oklch(0 0 0 / 0.03)' }
+    );
+
+    return {
+      seats,
+      community,
+      potLabel: '$' + this.state.pot,
+      log: this.state.log,
+      pickerOpen: this.state.pickerOpen,
+      candidates: CANDIDATES.map((c) => ({
+        name: c.name, flavor: c.flavor,
+        portraitId: 'candidate-' + c.name.replace(/\s+/g, '-').toLowerCase(),
+        onPick: () => this.pickCandidate(c),
+      })),
+      openPicker: this.openPicker,
+      closePicker: this.closePicker,
+      stopClick: this.stopClick,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
