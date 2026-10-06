@@ -47,7 +47,7 @@ export const LIMITS = {
   tip: 200,
   commonGround: 500,
   stopName: 80,
-  stopWhen: 20,
+  stopWhen: 30,
   stopNote: 200,
   tripTitle: 80,
   dayLabel: 30,

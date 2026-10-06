@@ -67,7 +67,7 @@ export function cleanStops(raw: unknown, max: number): Stop[] {
     .map(obj)
     .map((s) => ({
       name: str(s.name, LIMITS.stopName),
-      when: str(s.when, LIMITS.stopWhen),
+      when: fit(s.when, LIMITS.stopWhen),
       note: str(s.note, LIMITS.stopNote),
     }))
     .filter((s) => s.name)

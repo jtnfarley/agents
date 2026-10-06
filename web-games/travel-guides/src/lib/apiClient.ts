@@ -1,10 +1,10 @@
 /**
- * The only place the UI talks to the API routes. Phase 1 answers from mocks.ts.
- * Phase 3 replaces the transport with fetch and keeps these signatures.
+ * The only place the UI talks to the API routes. Requests go to /api/* with fetch.
+ * NEXT_PUBLIC_MOCK_AI=1 answers from mocks.ts instead, with no network call.
+ * The flag is read at build time, so the mock module is left out of live bundles.
  */
-import { ApiError } from "./errors";
-import { mockRoute } from "./mocks";
 import { cleanChat, cleanDestination, cleanReroll, cleanTrip } from "./clean";
+import { ApiError } from "./errors";
 import type {
   ApiResponse,
   ChatReply,
@@ -17,8 +17,44 @@ import type {
   TripOptions,
 } from "./types";
 
+const USE_MOCKS = process.env.NEXT_PUBLIC_MOCK_AI === "1";
+
+/** Slightly longer than the server's 40 second model timeout, so the server's error arrives first. */
+const CLIENT_TIMEOUT_MS = 45_000;
+
+async function transport(path: string, body: unknown): Promise<unknown> {
+  if (USE_MOCKS) {
+    const { mockRoute } = await import("./mocks");
+    return mockRoute(path, body);
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), CLIENT_TIMEOUT_MS);
+  try {
+    const res = await fetch(path, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    try {
+      return await res.json();
+    } catch {
+      // A non-JSON body means a framework error page or a proxy failure.
+      throw new ApiError("upstream_error", `HTTP ${res.status} without a JSON body`);
+    }
+  } catch (e) {
+    if (e instanceof ApiError) throw e;
+    throw new ApiError("upstream_error", e instanceof Error && e.name === "AbortError" ? "timeout" : "network error");
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function call<T extends object>(path: string, body: unknown): Promise<{ ok: true } & T> {
-  const res = (await mockRoute(path, body)) as ApiResponse<T>;
+  const res = (await transport(path, body)) as ApiResponse<T> | null;
+  if (!res || typeof res !== "object") throw new ApiError("upstream_error", "empty response");
   if (!res.ok) throw new ApiError(res.code, res.message);
   return res;
 }

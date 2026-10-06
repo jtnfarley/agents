@@ -53,4 +53,6 @@ Model slugs change. Check them at https://openrouter.ai/models before you deploy
 
 ## Phase status
 
-Phase 2 is complete: the routes, the LLM layer and the tests are in place, and live calls were checked with the slugs above. The UI still runs on mock fixtures on the client until Phase 3 wires it to `fetch`.
+Phase 2 (routes, LLM layer, tests) and Phase 3 (UI wired to the routes) are complete. The full flow was checked in a browser against live models: destination, single reply, debate, reroll, trip and revision, with no console errors and no requests leaving the site. The production bundle contains no key, slugs or prompt text.
+
+To develop the UI without a key, set `NEXT_PUBLIC_MOCK_AI=1` (or `MOCK_AI=1` for the routes alone). Phases 4 and 5 are still to come: the `/dev/models` comparison page, and the accessibility, responsive and smoke-test pass.
