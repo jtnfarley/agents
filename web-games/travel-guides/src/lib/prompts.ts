@@ -85,7 +85,7 @@ export function destinationPrompt(input: string, temps: [string, string]): Promp
       `Personalities: give each guide a distinct personality trait of one or two words that suits the destination and the person. Start from these temperaments and adapt them to the place. Local guide: ${temps[0]} (${TEMPS[temps[0]]}). Must-see guide: ${temps[1]} (${TEMPS[temps[1]]}).`,
       "",
       `Reply with JSON only, no markdown fences: {"city": string, "tagline": string, "prompts": [string, string, string], "local": ${shape}, "tourist": ${shape}}.`,
-      "\"city\" is the clean display name, just the place (for example Lisbon). \"tagline\" is 3 to 6 words about the place. \"prompts\" are three short traveler questions specific to this place. \"role\" is a short job and area, like Baker, Saint-Germain. \"brief\" is 2 to 3 short sentences in second person (You are...) covering background and what the guide believes about what to do there. \"trait\" is one or two words in English. \"how\" is the guide's backstory flavor, how they speak and behave, in 2 to 3 short sentences and no more than 40 words total.",
+      "\"city\" is the clean display name, just the place (for example Lisbon). \"tagline\" is 3 to 6 words about the place. \"prompts\" are three short traveler questions specific to this place. \"role\" is a short job and area, like Baker, Saint-Germain. \"brief\" is 2 to 3 short sentences in second person (You are...) covering background and what the guide believes about what to do there. \"trait\" is one or two words in English. \"how\" is the guide's backstory flavor, how they speak and behave, in 2 to 3 short sentences and no more than 40 words total. Write 'how' in the third person, describing the guide by name or as he, she or they, never addressing the traveler as you.",
     ].join("\n"),
     user: wrap("traveler_text", input),
   };
@@ -101,7 +101,7 @@ export function rerollPrompt(
     system: [
       `Two fictional guides in ${city}: the local guide ${local.name} (${local.role}) and the must-see guide ${tourist.name} (${tourist.role}). Current personalities: ${local.trait} and ${tourist.trait}.`,
       `Give each guide a NEW personality that suits the destination and their job and differs from the current one. Start from these temperaments and adapt them to the place. Local guide: ${temps[0]} (${TEMPS[temps[0]]}). Must-see guide: ${temps[1]} (${TEMPS[temps[1]]}).`,
-      'Reply with JSON only, no markdown fences: {"local": {"trait": string, "how": string}, "tourist": {"trait": string, "how": string}}. "trait" is one or two words in English. "how" is how they speak and behave, in 2 to 3 short sentences and no more than 40 words total.',
+      'Reply with JSON only, no markdown fences: {"local": {"trait": string, "how": string}, "tourist": {"trait": string, "how": string}}. "trait" is one or two words in English. "how" is how they speak and behave, in 2 to 3 short sentences and no more than 40 words total. Write "how" in the third person, describing the guide by name or as he, she or they. Do not use the word you anywhere in "how". For example: Fatima sighs at the stalls and speaks in a quiet, steady tone.',
     ].join("\n"),
     user: "Give the two new personalities now.",
   };
