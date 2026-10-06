@@ -76,16 +76,19 @@ export function cleanStops(raw: unknown, max: number): Stop[] {
 
 export function cleanChat(raw: Loose): ChatReply {
   if (raw.kind === "debate") {
-    const turns: TurnDraft[] = list(raw.turns)
-      .slice(0, 6)
-      .map((t) => {
-        const o = obj(t);
-        return {
-          speaker: o.speaker === "tourist" ? "tourist" : "local",
-          text: str(o.text, LIMITS.chatText) || "...",
-          stops: cleanStops(o.stops, 3),
-        };
+    // One response per guide: the first turn from each, in the order they appear.
+    const turns: TurnDraft[] = [];
+    for (const t of list(raw.turns)) {
+      const o = obj(t);
+      const speaker: Side = o.speaker === "tourist" ? "tourist" : "local";
+      if (turns.some((x) => x.speaker === speaker)) continue;
+      turns.push({
+        speaker,
+        text: str(o.text, LIMITS.chatText) || "...",
+        stops: cleanStops(o.stops, 3),
       });
+      if (turns.length === 2) break;
+    }
     return { kind: "debate", turns, common_ground: str(raw.common_ground, LIMITS.commonGround) };
   }
   return {

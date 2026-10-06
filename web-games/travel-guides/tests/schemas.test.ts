@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chatRequest, destinationOutput, destinationRequest, tripRequest } from "@/lib/schemas";
+import { chatRequest, debateOutput, destinationOutput, destinationRequest, tripRequest } from "@/lib/schemas";
 
 const guide = {
   name: "Sam",
@@ -42,5 +42,13 @@ describe("model output schemas", () => {
 
   it("rejects a destination reply missing a guide", () => {
     expect(destinationOutput.safeParse({ city: "Lisbon", tagline: "t", prompts: [], local: guide }).success).toBe(false);
+  });
+});
+
+describe("debate output", () => {
+  const turn = (speaker: string) => ({ speaker, text: "Hi." });
+  it("requires a turn from each guide", () => {
+    expect(debateOutput.safeParse({ turns: [turn("local")] }).success).toBe(false);
+    expect(debateOutput.safeParse({ turns: [turn("local"), turn("tourist")] }).success).toBe(true);
   });
 });

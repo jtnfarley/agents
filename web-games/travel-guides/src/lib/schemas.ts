@@ -41,7 +41,11 @@ export const chatSingleOutput = z.object({
 export const debateOutput = z.object({
   turns: z
     .array(z.object({ speaker: z.string(), text: z.string(), stops: z.array(stopOut).nullish() }))
-    .min(1),
+    .min(1)
+    // Both guides must answer. A reply with only one of them counts as bad output and is retried.
+    .refine((turns) => turns.some((t) => t.speaker === "local") && turns.some((t) => t.speaker === "tourist"), {
+      message: "debate needs a turn from each guide",
+    }),
   common_ground: z.string().nullish(),
 });
 

@@ -70,8 +70,7 @@ describe("API routes in MOCK_AI mode", () => {
     const res = await post(chat, { destination: destinationBody, target: "both", text: "Is it worth it?", history: [] }, "chat-2");
     const body = await res.json();
     expect(body).toMatchObject({ ok: true, kind: "debate" });
-    expect(body.turns.length).toBeGreaterThan(0);
-    expect(body.turns.length).toBeLessThanOrEqual(6);
+    expect(body.turns.map((t: { speaker: string }) => t.speaker)).toEqual(["local", "tourist"]);
   });
 
   it("drafts a trip with at least one day", async () => {

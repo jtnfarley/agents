@@ -52,8 +52,6 @@ function debateFixture() {
     turns: [
       { speaker: "local", text: "Start early at the market, before the crowds arrive.", stops: [{ name: "Morning market", when: "8:00", note: "Go before the crowds." }] },
       { speaker: "tourist", text: "Early is lovely, but the famous viewpoint is only worth it at sunset.", stops: [{ name: "Main viewpoint", when: "18:30", note: "Arrive 20 minutes early." }] },
-      { speaker: "local", text: "Sunset is a crowd. Come back at dusk, when the locals go.", stops: [] },
-      { speaker: "tourist", text: "Fine, but book the sights you cannot miss first.", stops: [] },
     ],
     common_ground: "Start at the market, then the viewpoint at dusk, and check opening times first.",
   };

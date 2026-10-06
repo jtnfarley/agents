@@ -70,7 +70,6 @@ function mockChat(body: Body) {
       { speaker: "local", text: `Skip the queue, ${guides.local.name.split(" ")[0]}'s way: start early.`, stops: [{ name: "Morning market", when: "8:00", note: "Go before the crowds." }] },
       { speaker: "tourist", text: "Early is wonderful, but the famous viewpoint is only worth it at sunset.", stops: [{ name: "Main viewpoint", when: "18:30", note: "Arrive 20 minutes early." }] },
       { speaker: "local", text: "Sunset is a crowd. Come back at dusk, when the locals go.", stops: [] },
-      { speaker: "tourist", text: "Fine, but book the sights you cannot miss first.", stops: [] },
     ];
     return {
       ok: true,
