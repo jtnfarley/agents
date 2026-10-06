@@ -207,3 +207,53 @@ export async function callJsonWith<T>(
 export function callJson<T>(args: CallArgs<T>): Promise<T> {
   return callJsonWith(openRouterComplete, args);
 }
+
+/** One model's result in the dev comparison page. Values stay on the server. */
+export interface Comparison {
+  slug: string;
+  ok: boolean;
+  latencyMs: number;
+  totalTokens: number | null;
+  outcome: string;
+  value?: unknown;
+}
+
+/**
+ * Runs one prompt through one model with the same parsing and validation as production,
+ * with no fallback, so the page shows what each model does on its own.
+ */
+export async function compareModel<T>(
+  complete: Completer,
+  spec: ModelSpec,
+  task: Task,
+  prompt: Prompt,
+  schema: ZodType<T>,
+): Promise<Comparison> {
+  const started = Date.now();
+  let usage: CompletionResponse["usage"];
+  const recording: Completer = async (req, opts) => {
+    const res = await complete(req, opts);
+    usage = res.usage;
+    return res;
+  };
+  try {
+    const value = await attempt(recording, task, spec, prompt, schema, false);
+    return {
+      slug: spec.slug,
+      ok: true,
+      latencyMs: Date.now() - started,
+      totalTokens: usage?.total_tokens ?? null,
+      outcome: "ok",
+      value,
+    };
+  } catch (e) {
+    const err = e instanceof AttemptError ? e : classify(e);
+    return {
+      slug: spec.slug,
+      ok: false,
+      latencyMs: Date.now() - started,
+      totalTokens: usage?.total_tokens ?? null,
+      outcome: `${err.failure}: ${err.message}`,
+    };
+  }
+}

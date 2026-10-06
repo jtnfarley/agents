@@ -41,7 +41,8 @@ function jsonModeSlugs(env: NodeJS.ProcessEnv): Set<string> {
   );
 }
 
-function specFor(slug: string, task: Task, env: NodeJS.ProcessEnv): ModelSpec {
+/** The spec for a given slug and task. Used by the dev comparison page as well as modelFor. */
+export function specForSlug(slug: string, task: Task, env: NodeJS.ProcessEnv = process.env): ModelSpec {
   return {
     slug,
     // Only send response_format to slugs the user has listed as supporting it.
@@ -58,12 +59,12 @@ export function modelFor(task: Task, side?: Side, env: NodeJS.ProcessEnv = proce
   }
   slug = slug || env[TASK_ENV[task]] || env.MODEL_DEFAULT;
   if (!slug) throw new ModelConfigError(`No model configured for ${task}. Set ${TASK_ENV[task]} or MODEL_DEFAULT.`);
-  return specFor(slug, task, env);
+  return specForSlug(slug, task, env);
 }
 
 /** The retry model for a task, or null when MODEL_FALLBACK is unset. */
 export function fallbackFor(task: Task, env: NodeJS.ProcessEnv = process.env): ModelSpec | null {
-  return env.MODEL_FALLBACK ? specFor(env.MODEL_FALLBACK, task, env) : null;
+  return env.MODEL_FALLBACK ? specForSlug(env.MODEL_FALLBACK, task, env) : null;
 }
 
 /** Every slug the app reads from env, for scripts/check-models.ts. */

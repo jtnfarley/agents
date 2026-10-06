@@ -55,4 +55,4 @@ Model slugs change. Check them at https://openrouter.ai/models before you deploy
 
 Phase 2 (routes, LLM layer, tests) and Phase 3 (UI wired to the routes) are complete. The full flow was checked in a browser against live models: destination, single reply, debate, reroll, trip and revision, with no console errors and no requests leaving the site. The production bundle contains no key, slugs or prompt text.
 
-To develop the UI without a key, set `NEXT_PUBLIC_MOCK_AI=1` (or `MOCK_AI=1` for the routes alone). Phases 4 and 5 are still to come: the `/dev/models` comparison page, and the accessibility, responsive and smoke-test pass.
+To develop the UI without a key, set `NEXT_PUBLIC_MOCK_AI=1` (or `MOCK_AI=1` for the routes alone). Phase 4 adds a dev-only comparison page at `/dev/models?place=Kyoto`. It sends one destination to every model in your env file and shows the result, latency and tokens side by side. It returns 404 in production. Its model list comes from the server environment, never from the URL. Phase 5 (accessibility, responsive and smoke-test pass) is still to come.

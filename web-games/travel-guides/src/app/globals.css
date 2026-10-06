@@ -723,6 +723,49 @@ select:disabled {
   }
 }
 
+/* Dev model comparison table */
+.cmp-wrap {
+  overflow-x: auto;
+}
+
+.cmp {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.cmp th,
+.cmp td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.cmp th {
+  font-family: var(--f-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.cmp .num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cmp .mono-cell {
+  font-family: var(--f-mono);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.cmp tr.bad td {
+  color: var(--warn);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
