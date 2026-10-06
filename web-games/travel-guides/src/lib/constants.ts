@@ -13,7 +13,14 @@ export const LEANS: { value: Lean; label: string }[] = [
   { value: "tourist", label: "Mostly must-see" },
 ];
 
-export const INTERESTS = ["Food", "Neighborhoods", "Museums", "Offbeat", "Shopping", "Parks"];
+/** How each lean setting reads inside prompts. */
+export const LEAN_TEXT: Record<Lean, string> = {
+  split: "half local picks and half must-see picks",
+  local: "mostly local picks",
+  tourist: "mostly must-see picks",
+};
+
+export const INTERESTS =["Food", "Neighborhoods", "Museums", "Offbeat", "Shopping", "Parks"];
 
 export const DEFAULT_INTERESTS = ["Food"];
 
@@ -46,6 +53,10 @@ export const LIMITS = {
   dayLabel: 30,
   tripTime: 10,
   place: 60,
+  changeRequest: 200,
 } as const;
 
 export const sideName = (side: Side) => (side === "tourist" ? "Must-see" : "Local");
+
+/** Per-request timeout for model calls (section 7). */
+export const LLM_TIMEOUT_MS = 40_000;
