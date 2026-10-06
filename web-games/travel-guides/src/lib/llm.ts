@@ -39,6 +39,8 @@ export interface CompletionRequest {
   temperature: number;
   max_tokens: number;
   response_format?: { type: "json_object" };
+  /** Hidden reasoning counts against max_tokens, so ask for little of it. */
+  reasoning?: { effort: "low" };
 }
 
 export interface CompletionResponse {
@@ -115,6 +117,7 @@ async function attempt<T>(
     ],
     temperature: spec.temperature,
     max_tokens: spec.maxTokens,
+    reasoning: { effort: "low" },
     ...(spec.jsonMode ? { response_format: { type: "json_object" as const } } : {}),
   };
 

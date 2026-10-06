@@ -26,8 +26,8 @@ const TASK_PARAMS: Record<Task, { temperature: number; maxTokens: number }> = {
   destination: { temperature: 0.9, maxTokens: 1200 },
   reroll: { temperature: 1.0, maxTokens: 400 },
   chat: { temperature: 0.8, maxTokens: 700 },
-  debate: { temperature: 0.9, maxTokens: 1400 },
-  trip: { temperature: 0.6, maxTokens: 1800 },
+  debate: { temperature: 0.9, maxTokens: 2400 },
+  trip: { temperature: 0.6, maxTokens: 2400 },
 };
 
 export class ModelConfigError extends Error {}

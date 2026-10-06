@@ -113,3 +113,11 @@ describe("callJsonWith", () => {
     expect(calls).toHaveLength(0);
   });
 });
+
+describe("request shape", () => {
+  it("asks for low reasoning effort, so hidden reasoning does not use up max_tokens", async () => {
+    const { complete, calls } = fake(ok('{"reply":"hi"}'));
+    await call(complete);
+    expect(calls[0].reasoning).toEqual({ effort: "low" });
+  });
+});
