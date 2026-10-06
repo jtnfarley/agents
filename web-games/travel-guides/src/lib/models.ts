@@ -9,6 +9,8 @@ export type Task = "destination" | "reroll" | "chat" | "debate" | "trip";
 export interface ModelSpec {
   slug: string;
   jsonMode: boolean;
+  /** "off" turns hidden reasoning off, for models that allow it. "low" asks for little. */
+  reasoning: "off" | "low";
   temperature: number;
   maxTokens: number;
 }
@@ -24,7 +26,7 @@ const TASK_ENV: Record<Task, string> = {
 /** Temperature and max_tokens per task, from section 5. */
 const TASK_PARAMS: Record<Task, { temperature: number; maxTokens: number }> = {
   destination: { temperature: 0.9, maxTokens: 1200 },
-  reroll: { temperature: 1.0, maxTokens: 400 },
+  reroll: { temperature: 1.0, maxTokens: 1000 },
   chat: { temperature: 0.8, maxTokens: 700 },
   debate: { temperature: 0.9, maxTokens: 2400 },
   trip: { temperature: 0.6, maxTokens: 2400 },
@@ -42,11 +44,21 @@ function jsonModeSlugs(env: NodeJS.ProcessEnv): Set<string> {
 }
 
 /** The spec for a given slug and task. Used by the dev comparison page as well as modelFor. */
+export function reasoningOffSlugs(env: NodeJS.ProcessEnv): Set<string> {
+  return new Set(
+    (env.MODEL_REASONING_OFF_SLUGS ?? "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean),
+  );
+}
+
 export function specForSlug(slug: string, task: Task, env: NodeJS.ProcessEnv = process.env): ModelSpec {
   return {
     slug,
     // Only send response_format to slugs the user has listed as supporting it.
     jsonMode: jsonModeSlugs(env).has(slug),
+    reasoning: reasoningOffSlugs(env).has(slug) ? "off" : "low",
     ...TASK_PARAMS[task],
   };
 }

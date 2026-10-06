@@ -39,12 +39,14 @@ export interface CompletionRequest {
   temperature: number;
   max_tokens: number;
   response_format?: { type: "json_object" };
-  /** Hidden reasoning counts against max_tokens, so ask for little of it. */
-  reasoning?: { effort: "low" };
+  /** Hidden reasoning counts against max_tokens. Off where the model allows it, otherwise low. */
+  reasoning?: { effort: "low" } | { enabled: false };
 }
 
 export interface CompletionResponse {
   choices: { finish_reason: string | null; message: { content: string | null } }[];
+  /** The model that actually answered. OpenRouter can route a slug, so this may differ from the request. */
+  model?: string;
   usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
 }
 
@@ -84,16 +86,17 @@ function classify(e: unknown): AttemptError {
   return new AttemptError("other", "network error");
 }
 
-function logCall(task: Task, spec: ModelSpec, started: number, usage?: CompletionResponse["usage"], outcome = "ok") {
-  // Model, task, latency and token counts only. No prompt text and no key.
+function logCall(task: Task, spec: ModelSpec, started: number, res?: CompletionResponse, outcome = "ok") {
+  // Models, task, outcome, latency and token counts only. No prompt text and no key.
   console.info(
     JSON.stringify({
       event: "llm_call",
       task,
       model: spec.slug,
+      served_model: res?.model ?? null,
       outcome,
       latency_ms: Date.now() - started,
-      tokens: usage ?? null,
+      tokens: res?.usage ?? null,
     }),
   );
 }
@@ -117,7 +120,7 @@ async function attempt<T>(
     ],
     temperature: spec.temperature,
     max_tokens: spec.maxTokens,
-    reasoning: { effort: "low" },
+    reasoning: spec.reasoning === "off" ? { enabled: false } : { effort: "low" },
     ...(spec.jsonMode ? { response_format: { type: "json_object" as const } } : {}),
   };
 
@@ -130,25 +133,28 @@ async function attempt<T>(
     throw err;
   }
   const choice = res.choices?.[0];
+  const content = choice?.message?.content ?? "";
+  // Lengths and finish reasons only. The model text is never logged.
+  const shape = `finish=${choice?.finish_reason ?? "none"} chars=${content.length}`;
   if (!choice || choice.finish_reason === "length") {
-    logCall(task, spec, started, res.usage, "parse");
+    logCall(task, spec, started, res, `parse: ${shape}`);
     throw new AttemptError("parse", "empty or truncated output");
   }
   let value: unknown;
   try {
-    value = extractJson(choice.message?.content ?? "");
+    value = extractJson(content);
   } catch {
-    logCall(task, spec, started, res.usage, "parse");
+    logCall(task, spec, started, res, `parse: no JSON, ${shape}`);
     throw new AttemptError("parse", "no JSON in output");
   }
   const parsed = schema.safeParse(value);
   if (!parsed.success) {
     // Paths and messages only. The values themselves stay out of the log.
     const paths = parsed.error.issues.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`).slice(0, 5);
-    logCall(task, spec, started, res.usage, `validation: ${paths.join("; ")}`);
+    logCall(task, spec, started, res, `validation: ${paths.join("; ")}`);
     throw new AttemptError("parse", "output failed validation");
   }
-  logCall(task, spec, started, res.usage);
+  logCall(task, spec, started, res);
   return parsed.data;
 }
 

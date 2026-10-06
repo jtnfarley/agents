@@ -27,22 +27,26 @@ Without a key, run the app in mock mode. Set `MOCK_AI=1` in `.env.local`. Every 
 
 ## Models
 
-Each task has its own variable, and each falls back to `MODEL_DEFAULT`. Chat can also set a model per guide with `MODEL_GUIDE_LOCAL` and `MODEL_GUIDE_TOURIST`. These are the slugs verified in Phase 2 (run `npm run check-models` to re-check):
+The app is set up on free-tier models (OpenRouter `:free` slugs that accept `response_format`). Each task has its own variable, and each falls back to `MODEL_DEFAULT`. Chat can also set a model per guide with `MODEL_GUIDE_LOCAL` and `MODEL_GUIDE_TOURIST`.
 
-| Variable | Suggested slug | Why |
+| Variable | Slug in use | Notes |
 |---|---|---|
-| `MODEL_DEFAULT` | `anthropic/claude-sonnet-5.5` | Strong general model, used when a task has no slug |
-| `MODEL_DESTINATION` | `anthropic/claude-sonnet-5.5` | Creative and reliable JSON for the two guides |
-| `MODEL_REROLL` | `deepseek/deepseek-v4-flash` | Fast and very cheap |
-| `MODEL_CHAT` | `google/gemini-3.5-flash-lite` | Quick single replies |
-| `MODEL_DEBATE` | `anthropic/claude-sonnet-5.5` | Strong writing for the four-turn argument |
-| `MODEL_TRIP` | `x-ai/grok-4.3` | Follows the itinerary structure |
-| `MODEL_FALLBACK` | `openai/gpt-6-luna` | One retry on bad output, 5xx or 429 |
-| `MODEL_GUIDE_LOCAL` / `MODEL_GUIDE_TOURIST` | empty | Optional: give each guide its own voice in chat |
+| `MODEL_DEFAULT` | `google/gemma-4-31b-it:free` | Rate-limited upstream at times |
+| `MODEL_DESTINATION` | `nvidia/nemotron-3-super-120b-a12b:free` | Reasoning turned off |
+| `MODEL_REROLL` | `liquid/lfm-2.5-2.6b:free` | Reasoning cannot be turned off; often runs out of tokens and falls back |
+| `MODEL_CHAT` | `google/gemma-4-26b-a4b-it:free` | Rate-limited upstream at times |
+| `MODEL_DEBATE` | `nvidia/nemotron-3-super-120b-a12b:free` | Reasoning turned off |
+| `MODEL_TRIP` | `google/gemma-4-31b-it:free` | Rate-limited upstream at times |
+| `MODEL_FALLBACK` | `dots-studio/dots-3-note-preview:free` | Used on bad output, 5xx or 429 |
 
-Set `MODEL_JSON_MODE_SLUGS` to the comma-separated slugs above. Only listed slugs get `response_format`.
+Two settings are per model:
 
-Model slugs change. Check them at https://openrouter.ai/models before you deploy.
+- `MODEL_JSON_MODE_SLUGS`: slugs that get `response_format`.
+- `MODEL_REASONING_OFF_SLUGS`: slugs that accept `reasoning: { enabled: false }`. Others get reasoning effort `low`. Hidden reasoning counts against `max_tokens`.
+
+Every `llm_call` log line shows the configured slug (`model`) and the slug that actually answered (`served_model`). Compare them to see routing and fallbacks. Free models are throttled upstream, so expect some 429s.
+
+Check slugs with `npm run check-models` before you deploy. Free models change or leave the free tier, so re-check the list at https://openrouter.ai/models.
 
 ## Safety
 
