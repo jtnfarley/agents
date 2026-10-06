@@ -86,8 +86,9 @@ function classify(e: unknown): AttemptError {
   return new AttemptError("other", "network error");
 }
 
+/** One line per model call: task, models, outcome, latency and token totals. No text, no key. */
 function logCall(task: Task, spec: ModelSpec, started: number, res?: CompletionResponse, outcome = "ok") {
-  // Models, task, outcome, latency and token counts only. No prompt text and no key.
+  const u = res?.usage;
   console.info(
     JSON.stringify({
       event: "llm_call",
@@ -96,7 +97,7 @@ function logCall(task: Task, spec: ModelSpec, started: number, res?: CompletionR
       served_model: res?.model ?? null,
       outcome,
       latency_ms: Date.now() - started,
-      tokens: res?.usage ?? null,
+      tokens: u ? { prompt: u.prompt_tokens, completion: u.completion_tokens, total: u.total_tokens } : null,
     }),
   );
 }
@@ -134,24 +135,20 @@ async function attempt<T>(
   }
   const choice = res.choices?.[0];
   const content = choice?.message?.content ?? "";
-  // Lengths and finish reasons only. The model text is never logged.
-  const shape = `finish=${choice?.finish_reason ?? "none"} chars=${content.length}`;
   if (!choice || choice.finish_reason === "length") {
-    logCall(task, spec, started, res, `parse: ${shape}`);
+    logCall(task, spec, started, res, "parse");
     throw new AttemptError("parse", "empty or truncated output");
   }
   let value: unknown;
   try {
     value = extractJson(content);
   } catch {
-    logCall(task, spec, started, res, `parse: no JSON, ${shape}`);
+    logCall(task, spec, started, res, "parse");
     throw new AttemptError("parse", "no JSON in output");
   }
   const parsed = schema.safeParse(value);
   if (!parsed.success) {
-    // Paths and messages only. The values themselves stay out of the log.
-    const paths = parsed.error.issues.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`).slice(0, 5);
-    logCall(task, spec, started, res, `validation: ${paths.join("; ")}`);
+    logCall(task, spec, started, res, "parse");
     throw new AttemptError("parse", "output failed validation");
   }
   logCall(task, spec, started, res);
