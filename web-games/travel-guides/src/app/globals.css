@@ -1,0 +1,141 @@
+/* Tokens follow reference/local-voices.html. Components read colors only from these tokens. */
+:root {
+  --h1: 222;
+  --h2: 352;
+  --ac-s: 65%;
+  --ac-l: 29%;
+  --so-s: 75%;
+  --so-l: 94%;
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --fg: #151a2c;
+  --muted: #58607a;
+  --line: #dde2ee;
+  --user-bg: #151a2c;
+  --user-fg: #ffffff;
+  --warn: #a4570a;
+  --on: #ffffff;
+  --accent: hsl(var(--h1) var(--ac-s) var(--ac-l));
+  --soft: hsl(var(--h1) var(--so-s) var(--so-l));
+  --accent2: hsl(var(--h2) var(--ac-s) var(--ac-l));
+  --soft2: hsl(var(--h2) var(--so-s) var(--so-l));
+  --f-display: var(--font-display), "Trebuchet MS", system-ui, sans-serif;
+  --f-body: var(--font-body), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: var(--font-mono), ui-monospace, Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ac-s: 90%;
+    --ac-l: 76%;
+    --so-s: 38%;
+    --so-l: 21%;
+    --bg: #0f1220;
+    --surface: #181c30;
+    --fg: #eceefa;
+    --muted: #9aa1bd;
+    --line: #2a3050;
+    --user-bg: #2c3358;
+    --user-fg: #eceefa;
+    --warn: #f0a85a;
+    --on: #0f1220;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ac-s: 90%;
+  --ac-l: 76%;
+  --so-s: 38%;
+  --so-l: 21%;
+  --bg: #0f1220;
+  --surface: #181c30;
+  --fg: #eceefa;
+  --muted: #9aa1bd;
+  --line: #2a3050;
+  --user-bg: #2c3358;
+  --user-fg: #eceefa;
+  --warn: #f0a85a;
+  --on: #0f1220;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--f-body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding: 28px 16px 40px;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--f-display);
+  text-wrap: balance;
+  line-height: 1.1;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.app {
+  max-width: 1120px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.top {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.top h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.lede {
+  color: var(--muted);
+  max-width: 64ch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
