@@ -93,7 +93,7 @@ export default function Stage({ debate }: { debate: Debate }) {
       ) : (
         <div className="layout">
           <div className="main">
-            <Transcript turns={debate.turns} names={names} />
+            <Transcript turns={debate.turns} names={names} draft={state.draft} />
             <Composer names={names} />
           </div>
           <Ledger ledger={debate.ledger} />

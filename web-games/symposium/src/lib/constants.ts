@@ -15,6 +15,7 @@ export const SUGGESTIONS = [
 export const LIMITS = {
   topic: 140,
   visitorText: 600,
+  turnText: 900,
 } as const;
 
 export const MOVE_VERB: Record<Move, string> = {
@@ -30,8 +31,6 @@ export const MOVE_VERB: Record<Move, string> = {
 /** Moves that name the other philosopher in their label, as in "Kant rebuts Mill". */
 export const MOVE_NAMES_TARGET: Move[] = ["argue", "rebut", "question", "concede"];
 
-/** Placeholder latency for mock calls, so the busy state is visible in Phase 1. */
-export const MOCK_DELAY_MS = 500;
 /** Gap between turns when Auto-play is on. */
 export const AUTOPLAY_MS = 2500;
 

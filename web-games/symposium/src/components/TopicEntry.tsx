@@ -1,13 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/apiClient";
 import { LIMITS, SUGGESTIONS } from "@/lib/constants";
 import { useStore } from "@/state/store";
 
 export default function TopicEntry() {
   const { state, actions } = useStore();
   const [topic, setTopic] = useState("");
+  const [chips, setChips] = useState<string[]>(SUGGESTIONS);
   const busy = state.busy !== null;
+
+  // Model-written chips when the server can supply them. The static list is the fallback.
+  useEffect(() => {
+    let live = true;
+    api
+      .suggestions()
+      .then((res) => {
+        if (live && res.suggestions.length > 0) setChips(res.suggestions);
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, []);
 
   return (
     <section className="entry" aria-labelledby="topic-label">
@@ -40,7 +56,7 @@ export default function TopicEntry() {
       <div className="chips-wrap">
         <p className="muted">Or try one of these:</p>
         <ul className="chips" aria-label="Suggested topics">
-          {SUGGESTIONS.map((s) => (
+          {chips.map((s) => (
             <li key={s}>
               <button type="button" className="chip" disabled={busy} onClick={() => void actions.startDebate(s)}>
                 {s}

@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { initialState, reducer, type AppState } from "@/state/store";
 import { debateSchema } from "@/lib/schemas";
-import { nextPhilosopherTurn, visitorTurns } from "@/lib/mockEngine";
-import type { Debate } from "@/lib/types";
+import type { Debate, Turn } from "@/lib/types";
 
 const debate: Debate = {
   id: "d1",
@@ -14,11 +13,17 @@ const debate: Debate = {
   ledger: null,
 };
 
-let seq = 0;
-const newId = () => `id${seq++}`;
+const opening: Turn = {
+  id: "t1",
+  speaker: "A",
+  move: "open",
+  target: "B",
+  text: "I begin from a commitment.",
+  stance: "Virtue is a kind of knowledge.",
+};
+const reply: Turn = { id: "t2", speaker: "B", move: "rebut", target: "A", text: "That step fails." };
 
-const withDebate = (): AppState =>
-  reducer(initialState, { type: "create", debate });
+const withDebate = (): AppState => reducer(initialState, { type: "create", debate });
 
 describe("store reducer", () => {
   it("creates a debate and makes it current", () => {
@@ -32,30 +37,22 @@ describe("store reducer", () => {
     s = reducer(s, { type: "setPair", id: "d1", pair: { A: "mill", B: "hobbes" } });
     expect(s.debates.d1.philosophers).toEqual({ A: "mill", B: "hobbes" });
 
-    const turn = nextPhilosopherTurn(s.debates.d1, newId);
-    s = reducer(s, { type: "appendTurns", id: "d1", turns: [turn] });
+    s = reducer(s, { type: "appendTurns", id: "d1", turns: [opening] });
     s = reducer(s, { type: "setPair", id: "d1", pair: { A: "socrates", B: "kant" } });
     expect(s.debates.d1.philosophers).toEqual({ A: "mill", B: "hobbes" });
   });
 
-  it("sets each stance from the opening turn", () => {
-    let s = withDebate();
-    const opening = nextPhilosopherTurn(s.debates.d1, newId);
-    expect(opening.speaker).toBe("A");
-    s = reducer(s, { type: "appendTurns", id: "d1", turns: [opening] });
-    expect(s.debates.d1.stances.A).toBeTruthy();
-    expect(s.debates.d1.stances.B).toBeNull();
+  it("sets the stance from the opening turn", () => {
+    const s = reducer(withDebate(), { type: "appendTurns", id: "d1", turns: [opening] });
+    expect(s.debates.d1.stances).toEqual({ A: "Virtue is a kind of knowledge.", B: null });
   });
 
-  it("adds a visitor message and the addressed answer", () => {
-    let s = withDebate();
-    const turn = nextPhilosopherTurn(s.debates.d1, newId);
-    s = reducer(s, { type: "appendTurns", id: "d1", turns: [turn] });
-    const turns = visitorTurns(s.debates.d1, "But what about the friend at the door?", "B", newId);
-    s = reducer(s, { type: "appendTurns", id: "d1", turns });
-    const last = s.debates.d1.turns.at(-1);
-    expect(last?.speaker).toBe("B");
-    expect(last && "target" in last && last.target).toBe("user");
+  it("appends a visitor message and the addressed answer in order", () => {
+    let s = reducer(withDebate(), { type: "appendTurns", id: "d1", turns: [opening] });
+    const visitor: Turn = { id: "u1", speaker: "user", target: "B", text: "What about the friend at the door?" };
+    const answer: Turn = { id: "t3", speaker: "B", move: "answer", target: "user", text: "Still no." };
+    s = reducer(s, { type: "appendTurns", id: "d1", turns: [visitor, answer] });
+    expect(s.debates.d1.turns.map((t) => t.id)).toEqual(["t1", "u1", "t3"]);
   });
 
   it("leaves the current debate when a new one starts", () => {
@@ -66,17 +63,31 @@ describe("store reducer", () => {
     expect(s.autoplay).toBe(false);
     expect(s.debates.d1).toBeDefined();
   });
+
+  it("stores the summary with its ledger", () => {
+    let s = reducer(withDebate(), { type: "appendTurns", id: "d1", turns: [opening, reply] });
+    s = reducer(s, {
+      type: "setSummary",
+      id: "d1",
+      rollingSummary: "They disagree.",
+      ledger: { agree: [], split: ["Lying"], openQuestions: [], updatedAfterTurn: 2 },
+    });
+    expect(s.debates.d1.ledger?.split).toEqual(["Lying"]);
+  });
 });
 
 describe("saved debate schema", () => {
-  it("accepts a debate built by the engine", () => {
-    const turn = nextPhilosopherTurn(debate, newId);
-    const built = { ...debate, turns: [turn] };
-    expect(debateSchema.safeParse(built).success).toBe(true);
+  it("accepts a debate with turns", () => {
+    expect(debateSchema.safeParse({ ...debate, turns: [opening, reply] }).success).toBe(true);
   });
 
   it("rejects a debate with an unknown move", () => {
-    const bad = { ...debate, turns: [{ id: "x", speaker: "A", move: "shout", target: "B", text: "hi" }] };
+    const bad = { ...debate, turns: [{ ...reply, move: "shout" }] };
+    expect(debateSchema.safeParse(bad).success).toBe(false);
+  });
+
+  it("rejects a philosopher id that is not on the roster", () => {
+    const bad = { ...debate, philosophers: { A: "socrates", B: "nobody" } };
     expect(debateSchema.safeParse(bad).success).toBe(false);
   });
 });

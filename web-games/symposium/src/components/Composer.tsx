@@ -21,12 +21,12 @@ export default function Composer({ names }: { names: Record<SpeakerId, string> }
     <form
       className="composer"
       aria-label="Speak to the table"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault();
         const trimmed = text.trim();
         if (!trimmed || busy) return;
-        void actions.takeTurn({ text: trimmed, target });
-        setText("");
+        // Keep the text if the turn failed, so the visitor can send it again.
+        if (await actions.takeTurn({ text: trimmed, target })) setText("");
       }}
     >
       <fieldset className="targets">

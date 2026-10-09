@@ -48,3 +48,6 @@ export interface Debate {
   rollingSummary: string;
   ledger: Ledger | null;
 }
+
+/** The two seats' philosophers, by id. */
+export type Pair = Record<SpeakerId, string>;

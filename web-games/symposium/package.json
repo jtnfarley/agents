@@ -10,7 +10,9 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "e2e": "playwright test",
-    "check-models": "tsx --env-file=.env.local scripts/check-models.ts"
+    "check-models": "tsx --env-file=.env.local scripts/check-models.ts",
+    "voice-samples": "tsx --env-file=.env.local scripts/voice-samples.ts",
+    "debate-run": "tsx --env-file=.env.local scripts/debate-run.ts"
   },
   "dependencies": {
     "next": "16.3.8",

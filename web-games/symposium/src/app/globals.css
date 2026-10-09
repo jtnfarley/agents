@@ -78,6 +78,15 @@ body {
   padding: 40px var(--gutter) 24px;
 }
 
+.app-started {
+  padding-top: 20px;
+}
+
+.app-started h1 {
+  font-size: 1.6rem;
+  margin-bottom: 10px;
+}
+
 h1,
 h2,
 h3 {
@@ -320,9 +329,15 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  max-height: 60vh;
+  /* Fills what is left under the header, seats and composer, so the composer stays on screen. */
+  height: clamp(220px, calc(100dvh - 640px), 60vh);
   overflow-y: auto;
   padding-right: 4px;
+}
+
+/* Short conversations sit at the bottom, next to the composer, as in a chat window. */
+.transcript > :first-child {
+  margin-top: auto;
 }
 
 .turn {
@@ -507,10 +522,6 @@ textarea {
 
   .strip h2 {
     font-size: 1.4rem;
-  }
-
-  .transcript {
-    max-height: none;
   }
 }
 

@@ -1,4 +1,8 @@
+"use client";
+
+import { useLayoutEffect, useRef } from "react";
 import { MOVE_NAMES_TARGET, MOVE_VERB } from "@/lib/constants";
+import type { Draft } from "@/state/store";
 import type { SpeakerId, Turn } from "@/lib/types";
 
 type SeatTurn = Extract<Turn, { speaker: SpeakerId }>;
@@ -13,9 +17,38 @@ export function turnLabel(turn: SeatTurn, names: Record<SpeakerId, string>): str
   return `${who} ${verb}`;
 }
 
-export default function Transcript({ turns, names }: { turns: Turn[]; names: Record<SpeakerId, string> }) {
+/** Within this many pixels of the bottom counts as "at the bottom", so small drifts do not unpin the view. */
+const STICK_PX = 80;
+
+export default function Transcript({
+  turns,
+  names,
+  draft,
+}: {
+  turns: Turn[];
+  names: Record<SpeakerId, string>;
+  draft: Draft | null;
+}) {
+  const box = useRef<HTMLOListElement>(null);
+  const pinned = useRef(true);
+
+  // Like a chat window: stay on the newest line unless the reader scrolled up to read.
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (el && pinned.current) el.scrollTop = el.scrollHeight;
+  }, [turns, draft]);
+
   return (
-    <ol className="transcript" aria-live="polite" aria-label="Transcript">
+    <ol
+      ref={box}
+      className="transcript"
+      aria-live="polite"
+      aria-label="Transcript"
+      onScroll={(e) => {
+        const el = e.currentTarget;
+        pinned.current = el.scrollHeight - el.scrollTop - el.clientHeight <= STICK_PX;
+      }}
+    >
       {turns.map((t) => {
         if (t.speaker === "user") {
           const to = t.target === "both" ? "both" : names[t.target];
@@ -40,6 +73,20 @@ export default function Transcript({ turns, names }: { turns: Turn[]; names: Rec
           </li>
         );
       })}
+      {draft?.visitor && (
+        <li className="turn visitor">
+          <p className="label">You to {draft.visitor.target === "both" ? "both" : names[draft.visitor.target]}</p>
+          <p>{draft.visitor.text}</p>
+        </li>
+      )}
+      {draft && (
+        <li className="turn drafting" data-seat={draft.speaker}>
+          <p className="label">
+            {turnLabel({ id: "draft", speaker: draft.speaker, move: draft.move, target: draft.target, text: "" }, names)}
+          </p>
+          <p>{draft.text}</p>
+        </li>
+      )}
     </ol>
   );
 }

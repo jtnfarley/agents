@@ -9,20 +9,25 @@ import {
   useRef,
   type ReactNode,
 } from "react";
-import { AUTOPLAY_MS, LIMITS, MOCK_DELAY_MS } from "@/lib/constants";
-import { mockSummary, nextPhilosopherTurn, visitorTurns } from "@/lib/mockEngine";
-import { drawPair, type Pair } from "@/lib/pairing";
-import { ROSTER } from "@/lib/roster";
+import { api, type TurnStart } from "@/lib/apiClient";
+import { AUTOPLAY_MS, LIMITS } from "@/lib/constants";
+import { errorCodeOf, errorText } from "@/lib/errors";
 import { loadState, saveState, type SavedState } from "@/lib/storage";
 import { shouldSummarize } from "@/lib/turnPolicy";
-import type { Debate, Ledger, Target, Turn } from "@/lib/types";
+import type { Debate, Ledger, Pair, Target, Turn } from "@/lib/types";
 
 export type Busy = "topic" | "turn" | "summary" | null;
+
+/** A turn that is still arriving. It becomes a real turn when the server finishes. */
+export interface Draft extends TurnStart {
+  text: string;
+}
 
 export interface AppState extends SavedState {
   busy: Busy;
   autoplay: boolean;
   error: string | null;
+  draft: Draft | null;
   hydrated: boolean;
 }
 
@@ -31,6 +36,9 @@ type Action =
   | { type: "busy"; busy: Busy }
   | { type: "error"; message: string | null }
   | { type: "autoplay"; on: boolean }
+  | { type: "draftStart"; start: TurnStart }
+  | { type: "draftText"; text: string }
+  | { type: "draftClear" }
   | { type: "create"; debate: Debate }
   | { type: "setPair"; id: string; pair: Pair }
   | { type: "appendTurns"; id: string; turns: Turn[] }
@@ -44,10 +52,9 @@ export const initialState: AppState = {
   busy: null,
   autoplay: false,
   error: null,
+  draft: null,
   hydrated: false,
 };
-
-const ERROR_TEXT = "Something went wrong. Try again.";
 
 export function currentDebate(state: Pick<AppState, "debates" | "currentId">): Debate | null {
   return state.currentId ? (state.debates[state.currentId] ?? null) : null;
@@ -70,6 +77,12 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, error: action.message };
     case "autoplay":
       return { ...state, autoplay: action.on };
+    case "draftStart":
+      return { ...state, draft: { ...action.start, text: "" } };
+    case "draftText":
+      return state.draft ? { ...state, draft: { ...state.draft, text: action.text } } : state;
+    case "draftClear":
+      return { ...state, draft: null };
     case "create":
       return {
         ...state,
@@ -84,7 +97,7 @@ export function reducer(state: AppState, action: Action): AppState {
         d.turns.length > 0 ? d : { ...d, philosophers: action.pair },
       );
     case "appendTurns":
-      return updateDebate(state, action.id, (d) => {
+      return updateDebate({ ...state, draft: null }, action.id, (d) => {
         const stances = { ...d.stances };
         for (const t of action.turns) {
           if ((t.speaker === "A" || t.speaker === "B") && t.stance) stances[t.speaker] = t.stance;
@@ -103,14 +116,15 @@ export function reducer(state: AppState, action: Action): AppState {
 }
 
 export interface Actions {
-  startDebate(topic: string): Promise<void>;
+  /** Resolves true when the debate was created. */
+  startDebate(topic: string): Promise<boolean>;
   reshuffle(): Promise<void>;
-  takeTurn(visitor?: { text: string; target: Target }): Promise<void>;
+  /** Resolves true when the turn landed, so the composer can clear its text. */
+  takeTurn(visitor?: { text: string; target: Target }): Promise<boolean>;
   setAutoplay(on: boolean): void;
   newDebate(): void;
 }
 
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const newId = () => crypto.randomUUID();
 
 export interface StoreValue {
@@ -142,27 +156,29 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const actions = useMemo<Actions>(() => {
     // One request at a time. Clicks while busy are ignored.
-    const run = async (busy: Busy, fn: () => Promise<void>) => {
-      if (inFlight.current) return;
+    const run = async (busy: Busy, fn: () => Promise<void>): Promise<boolean> => {
+      if (inFlight.current) return false;
       inFlight.current = true;
       dispatch({ type: "busy", busy });
       dispatch({ type: "error", message: null });
       try {
         await fn();
-      } catch {
-        dispatch({ type: "error", message: ERROR_TEXT });
+        return true;
+      } catch (e) {
+        dispatch({ type: "error", message: errorText(errorCodeOf(e)) });
+        return false;
       } finally {
         inFlight.current = false;
+        dispatch({ type: "draftClear" });
         dispatch({ type: "busy", busy: null });
       }
     };
 
-    /** Runs the background summary when the turn count reaches a multiple of four. */
+    /** Asks the server for a summary when the turn count reaches a multiple of four. */
     const maybeSummarize = async (debate: Debate) => {
       if (!shouldSummarize(debate.turns)) return;
       dispatch({ type: "busy", busy: "summary" });
-      await wait(MOCK_DELAY_MS);
-      const { rollingSummary, ledger } = mockSummary(debate);
+      const { rollingSummary, ledger } = await api.summarize({ debate });
       dispatch({ type: "setSummary", id: debate.id, rollingSummary, ledger });
     };
 
@@ -171,19 +187,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const topic = raw.trim().slice(0, LIMITS.topic);
         if (!topic) {
           dispatch({ type: "error", message: "Enter a topic to begin." });
-          return;
+          return false;
         }
-        await run("topic", async () => {
-          await wait(MOCK_DELAY_MS);
-          const last = stateRef.current.order.at(-1);
-          const previous = last ? stateRef.current.debates[last] : undefined;
-          const pair = drawPair(ROSTER, previous ? previous.philosophers : null);
+        const last = stateRef.current.order.at(-1);
+        const previous = last ? stateRef.current.debates[last] : undefined;
+        return run("topic", async () => {
+          const res = await api.start({
+            topic,
+            previousPair: previous ? previous.philosophers : undefined,
+          });
           dispatch({
             type: "create",
             debate: {
               id: newId(),
-              topic,
-              philosophers: pair,
+              topic: res.topic,
+              philosophers: { A: res.a, B: res.b },
               stances: { A: null, B: null },
               turns: [],
               rollingSummary: "",
@@ -197,23 +215,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const debate = currentDebate(stateRef.current);
         if (!debate || debate.turns.length > 0) return;
         await run("topic", async () => {
-          await wait(MOCK_DELAY_MS);
-          const pair = drawPair(ROSTER, debate.philosophers);
-          dispatch({ type: "setPair", id: debate.id, pair });
+          const res = await api.reshuffle({
+            topic: debate.topic,
+            currentPair: debate.philosophers,
+            turnCount: debate.turns.length,
+          });
+          dispatch({ type: "setPair", id: debate.id, pair: { A: res.a, B: res.b } });
         });
       },
 
       async takeTurn(visitor) {
         const debate = currentDebate(stateRef.current);
-        if (!debate) return;
-        await run("turn", async () => {
-          await wait(MOCK_DELAY_MS);
-          const turns = visitor
-            ? visitorTurns(debate, visitor.text.slice(0, LIMITS.visitorText), visitor.target, newId)
-            : [nextPhilosopherTurn(debate, newId)];
-          dispatch({ type: "appendTurns", id: debate.id, turns });
-          const after = { ...debate, turns: [...debate.turns, ...turns] };
-          await maybeSummarize(after);
+        if (!debate) return false;
+        return run("turn", async () => {
+          const res = await api.turnStream(
+            {
+              debate,
+              ...(visitor ? { userText: visitor.text.slice(0, LIMITS.visitorText), target: visitor.target } : {}),
+            },
+            {
+              onStart: (start) => dispatch({ type: "draftStart", start }),
+              onText: (text) => dispatch({ type: "draftText", text }),
+            },
+          );
+          dispatch({ type: "appendTurns", id: debate.id, turns: res.turns });
+          await maybeSummarize({ ...debate, turns: [...debate.turns, ...res.turns] });
         });
       },
 

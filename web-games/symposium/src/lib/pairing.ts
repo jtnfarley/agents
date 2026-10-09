@@ -3,9 +3,10 @@
  * Uniform over distinct pairs, excluding the pair from the previous debate or reshuffle,
  * with the seats (A or B) assigned at random.
  */
-import type { Philosopher, SpeakerId } from "./types";
+import type { Pair, Philosopher } from "./types";
 
-export type Pair = Record<SpeakerId, string>;
+export type { Pair };
+
 
 export function drawPair(roster: Philosopher[], previous: Pair | null, rng: () => number = Math.random): Pair {
   const banned = previous ? [previous.A, previous.B].sort().join("|") : null;

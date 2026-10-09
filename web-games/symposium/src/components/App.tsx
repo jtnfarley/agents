@@ -15,15 +15,19 @@ export default function App() {
 function Shell() {
   const { state } = useStore();
   const debate = currentDebate(state);
+  // Once a debate is under way the transcript needs the room, so the intro goes.
+  const started = (debate?.turns.length ?? 0) > 0;
 
   return (
-    <div className="app">
+    <div className={started ? "app app-started" : "app"}>
       <header className="top">
         <h1>Symposium</h1>
-        <p className="lede">
-          Give a topic and two philosophers, drawn at random, will debate it. You sit at the table:
-          ask either one a question, challenge both, or interrupt mid-argument.
-        </p>
+        {!started && (
+          <p className="lede">
+            Give a topic and two philosophers, drawn at random, will debate it. You sit at the table:
+            ask either one a question, challenge both, or interrupt mid-argument.
+          </p>
+        )}
       </header>
 
       {state.hydrated && (debate ? <Stage debate={debate} /> : <TopicEntry />)}
