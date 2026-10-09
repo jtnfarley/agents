@@ -2,7 +2,7 @@
  * Fixtures for MOCK_AI=1. Each one is shaped like the model's output and fits the move and topic.
  * The lines are placeholders for UI and route work. They are not philosophy.
  */
-import { SUGGESTIONS } from "./constants";
+import { sampleSuggestions } from "./constants";
 import type { Move, Philosopher } from "./types";
 
 const LINES: Record<Move, (opp: string, topic: string) => string> = {
@@ -39,4 +39,4 @@ export function mockSummaryOutput(input: { topic: string; a: string; b: string; 
 
 export const mockTopicOutput = (topic: string) => ({ allowed: true, topic });
 
-export const mockSuggestOutput = () => ({ suggestions: [...SUGGESTIONS] });
+export const mockSuggestOutput = () => ({ suggestions: sampleSuggestions() });

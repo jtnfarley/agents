@@ -1,28 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api } from "@/lib/apiClient";
-import { LIMITS, SUGGESTIONS } from "@/lib/constants";
+import { LIMITS, SUGGESTIONS, sampleSuggestions } from "@/lib/constants";
 import { useStore } from "@/state/store";
 
 export default function TopicEntry() {
   const { state, actions } = useStore();
   const [topic, setTopic] = useState("");
+  // The first render uses a fixed set so server and client markup match. One random draw
+  // follows on mount, and the chips then stay put.
   const [chips, setChips] = useState<string[]>(SUGGESTIONS);
   const busy = state.busy !== null;
 
-  // Model-written chips when the server can supply them. The static list is the fallback.
   useEffect(() => {
-    let live = true;
-    api
-      .suggestions()
-      .then((res) => {
-        if (live && res.suggestions.length > 0) setChips(res.suggestions);
-      })
-      .catch(() => undefined);
-    return () => {
-      live = false;
-    };
+    setChips(sampleSuggestions());
   }, []);
 
   return (

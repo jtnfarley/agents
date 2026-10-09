@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { fence, summaryPrompt, topicCheckPrompt, turnPrompt } from "@/lib/prompts";
 import { ROSTER, rosterById } from "@/lib/roster";
+import { HUES, SUGGESTION_POOL, sampleSuggestions } from "@/lib/constants";
 import type { Turn } from "@/lib/types";
 
 const socrates = rosterById("socrates")!;
@@ -97,9 +98,25 @@ describe("fence", () => {
 });
 
 describe("roster", () => {
-  it("has eight unique philosophers with distinct hues", () => {
-    expect(ROSTER).toHaveLength(8);
-    expect(new Set(ROSTER.map((p) => p.id)).size).toBe(8);
-    expect(new Set(ROSTER.map((p) => p.accent)).size).toBe(8);
+  it("has unique philosophers with distinct hues", () => {
+    const n = ROSTER.length;
+    expect(n).toBe(27);
+    expect(new Set(ROSTER.map((p) => p.id)).size).toBe(n);
+    expect(new Set(ROSTER.map((p) => p.accent)).size).toBe(n);
+    expect(Math.max(...ROSTER.map((p) => p.accent))).toBeLessThan(HUES.length);
+  });
+});
+
+describe("starter questions", () => {
+  it("keeps every question within the chip limit, without duplicates", () => {
+    expect(new Set(SUGGESTION_POOL).size).toBe(SUGGESTION_POOL.length);
+    for (const q of SUGGESTION_POOL) expect(q.length).toBeLessThanOrEqual(80);
+  });
+
+  it("samples distinct questions from the pool", () => {
+    const picked = sampleSuggestions(5);
+    expect(picked).toHaveLength(5);
+    expect(new Set(picked).size).toBe(5);
+    for (const q of picked) expect(SUGGESTION_POOL).toContain(q);
   });
 });
